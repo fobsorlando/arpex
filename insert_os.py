@@ -1,9 +1,66 @@
-import requests
-import json
-from psycopg2.extras import Json
 import psycopg2
+from psycopg2.extras import Json
 
-
+# Dados estruturados fornecidos
+dados = {
+    'cliente_id': 7211,
+    'os_encerrada_impedir_estorno': True,
+    'servico_online_mac': 'E0:B6:68:C5:A1:8D',
+    'cliente_email': 'willamessilva544@gmail.com',
+    'endereco_id': 27761,
+    'os_prioridade': 2,
+    'os_status': 1,
+    'os_observacao': '',
+    'endereco_complemento': 'VILLAGE DEL VILLE , BLOCO 1, APARTAMENTO 304',
+    'os_motivo_descricao': 'Financeiro',
+    'os_tecnicos_auxiliares': [],
+    'os_servicoprestado': 'Paulo e enderson 27/03\ncarnê entregue ',
+    'os_data_finalizacao': '2025-03-27T08:46:27',
+    'plano': '600 MB',
+    'os_protocolo': '250324172600',
+    'os_close_edit': False,
+    'servico_online': True,
+    'contrato_status': ' Ativo ',
+    'nas_ip': '172.16.132.12',
+    'servico_ip': '100.65.12.234',
+    'endereco_pontoreferencia': '',
+    'contrato_pop': 'TERESINA-PI',
+    'os_data_cadastro': '2025-03-24T17:27:26.367691',
+    'os_id': 25273,
+    'os_setor': '',
+    'servico_id': '10339',
+    'os_tecnico_responsavel': 'suporte02',
+    'plano_id': 8,
+    'contrato_endereco_ll': '',
+    'os_data_agendamento': '2025-03-27T17:30:56',
+    'servico_online_ipv6_pd': None,
+    'contrato_id': 10341,
+    'cliente_contato': '(86) 99419-6626',
+    'contrato_status_data': '24/03/2025 11:35:35',
+    'endereco_numero': 'SN',
+    'os_setor_id': '',
+    'servico_login': '7211',
+    'servico_mac': 'E0:B6:68:C5:A1:8D',
+    'cliente': 'MARIA APARECIDA NUNES DA SILVA',
+    'endereco_bairro': 'VERDE CAP',
+    'endereco_uf': 'PI',
+    'os_motivo_id': 5,
+    'plano_download': '614400kbps',
+    'plano_upload': '307200kbps',
+    'endereco_logradouro': 'RUA FLOR DO TEMPO, 8505',
+    'servico_tipo': 1,
+    'servico_password': '123',
+    'os_djson': {},
+    'os_conteudo': 'entregar carnê',
+    'servico_online_ip': '100.65.12.234',
+    'contrato_status_id': '1',
+    'endereco_cidade': 'TERESINA',
+    'os_lancamento_comodato': False,
+    'os_status_txt': 'Encerrada',
+    'contrato_pop_id': 1,
+    'os_encerrada_impedir_lancamento_avulso': True,
+    'endereco_ll': ''
+}
 
 # Configuração da conexão com o banco de dados
 try:
@@ -15,12 +72,9 @@ try:
         port="5432"              # Porta padrão do PostgreSQL
     )
     cursor = conn.cursor()
-except psycopg2.Error as e:
-    print(f"erro ao conectar: {e}")
-    conn.rollback()
 
-# Query de INSERT
-insert_query = """
+    # Query de INSERT
+    insert_query = """
     INSERT INTO ordens_servico (
         cliente_id, os_encerrada_impedir_estorno, servico_online_mac, cliente_email, endereco_id,
         os_prioridade, os_status, os_observacao, endereco_complemento, os_motivo_descricao,
@@ -44,33 +98,7 @@ insert_query = """
     )
     """
 
-#  "cliente_id": 1,
-#  "data_finalizacao": "2025-03-31",
-# "status_encerrada": 1
-#  "agendamento_final": "2025-03-31",
-url = "https://digitalnetpith.sgp.tsmx.com.br/api/os/list/"
-
-payload = json.dumps({
-  "app": "MONITORAMENTO",
-  "token": "6e848212-f717-446c-b811-d66a664ea0f1",
-  "agendamento_inicial": "2025-03-01",
-  "agendamento_final": "2025-03-31",
-  "status_encerrada": 1
-})
-headers = {
-  'Content-Type': 'application/json'
-}
-
-response = requests.request("POST", url, headers=headers, data=payload)
-
-#print (type(json.dumps(response.text)))
-
-my_json = json.loads(response.text)
-
-print (len(my_json))
-
-for dados in my_json:
-    print(f"Inserindo Dados OS: {dados['os_id']}")
+    # Valores para o INSERT
     valores = (
         dados['cliente_id'], dados['os_encerrada_impedir_estorno'], dados['servico_online_mac'],
         dados['cliente_email'], dados['endereco_id'], dados['os_prioridade'], dados['os_status'],
@@ -90,26 +118,17 @@ for dados in my_json:
         dados['contrato_pop_id'], dados['os_encerrada_impedir_lancamento_avulso'], dados['endereco_ll']
     )
 
+    # Executando o INSERT
+    cursor.execute(insert_query, valores)
+    conn.commit()
+    print("Dados inseridos com sucesso!")
 
-    try:
-        # Executando o INSERT
-        cursor.execute(insert_query, valores)
-        conn.commit()
-        print("Dados inseridos com sucesso!")
-    
-    except psycopg2.Error as e:
-        print(f"Erro ao inserir ou inserir dados: {e}")
-        conn.rollback()
-    
+except psycopg2.Error as e:
+    print(f"Erro ao conectar ou inserir dados: {e}")
+    conn.rollback()
 
-    #print ('Id do servico : ',resp['servico_id'],' Protocolo OS : ',resp['os_protocolo'])
-    #print ('Cliente : ',resp['cliente_id'],'-',resp['cliente'] ,'Data : ',resp['contrato_status_data'],'Plano : ',resp['plano'])
-    #print ('Conteudo da OS : ',resp['os_conteudo'])
-    #print ('Tecnico Responsavel : ',resp['os_tecnico_responsavel'])
-    #print ('Aqui: ',resp['os_servicoprestado'])
-    #print ('--------------------------------------------------------------------')
-
-if cursor:
-   cursor.close()
-if conn:
-   conn.close()
+finally:
+    if cursor:
+        cursor.close()
+    if conn:
+        conn.close()
