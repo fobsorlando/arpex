@@ -71,6 +71,8 @@ print (len(my_json))
 
 for dados in my_json:
     print(f"Inserindo Dados OS: {dados['os_id']}")
+    print (dados)
+    break
     valores = (
         dados['cliente_id'], dados['os_encerrada_impedir_estorno'], dados['servico_online_mac'],
         dados['cliente_email'], dados['endereco_id'], dados['os_prioridade'], dados['os_status'],
